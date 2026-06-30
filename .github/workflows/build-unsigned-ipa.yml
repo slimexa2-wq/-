@@ -1,0 +1,100 @@
+name: Build unsigned iPad IPA
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - main
+      - feat/ipad-capacitor-mvp
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mineradio-ipad-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout iPad port
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Fetch upstream Mineradio
+        run: |
+          rm -rf .upstream/Mineradio
+          mkdir -p .upstream
+          git clone --depth 1 https://github.com/XxHuberrr/Mineradio.git .upstream/Mineradio
+
+      - name: Install port dependencies
+        run: npm install
+
+      - name: Prepare mobile web assets
+        run: npm run mobile:prepare
+
+      - name: Generate Capacitor iOS project
+        run: |
+          rm -rf ios
+          npx cap add ios
+          npx cap sync ios
+
+      - name: Allow local Windows companion backend
+        run: |
+          PLIST="ios/App/App/Info.plist"
+          /usr/libexec/PlistBuddy -c "Delete :NSAppTransportSecurity" "$PLIST" 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity dict" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity:NSAllowsArbitraryLoads bool true" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Add :NSLocalNetworkUsageDescription string Mineradio connects to your Windows companion on the same Wi-Fi for account, playlist and audio services." "$PLIST"
+
+      - name: Resolve Swift packages
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -resolvePackageDependencies
+
+      - name: Build unsigned device app
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            TARGETED_DEVICE_FAMILY=2 \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY='' \
+            DEVELOPMENT_TEAM='' \
+            clean build
+
+      - name: Package unsigned IPA
+        run: |
+          APP_PATH="$RUNNER_TEMP/DerivedData/Build/Products/Release-iphoneos/App.app"
+          test -d "$APP_PATH"
+          mkdir -p "$RUNNER_TEMP/ipa/Payload"
+          cp -R "$APP_PATH" "$RUNNER_TEMP/ipa/Payload/Mineradio.app"
+          cd "$RUNNER_TEMP/ipa"
+          /usr/bin/zip -qry "$GITHUB_WORKSPACE/Mineradio-iPad-unsigned.ipa" Payload
+          /usr/bin/shasum -a 256 "$GITHUB_WORKSPACE/Mineradio-iPad-unsigned.ipa" > "$GITHUB_WORKSPACE/Mineradio-iPad-unsigned.ipa.sha256"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mineradio-iPad-unsigned
+          path: |
+            Mineradio-iPad-unsigned.ipa
+            Mineradio-iPad-unsigned.ipa.sha256
+          if-no-files-found: error
+          retention-days: 30
