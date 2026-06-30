@@ -1,0 +1,34 @@
+{
+  "name": "mineradio-ipad-port",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "upstream:sync": "node scripts/sync-upstream.mjs",
+    "mobile:patch": "node scripts/patch-mobile.mjs",
+    "mobile:prepare": "npm run upstream:sync && npm run mobile:patch",
+    "cap:add:ios": "npx cap add ios",
+    "cap:sync": "npx cap sync ios",
+    "ios:open": "npx cap open ios",
+    "build:ipad": "npm run mobile:prepare && npm run cap:sync",
+    "check": "node scripts/check-project.mjs"
+  },
+  "dependencies": {
+    "@capacitor/app": "8.1.0",
+    "@capacitor/browser": "8.0.3",
+    "@capacitor/core": "8.4.1",
+    "@capacitor/filesystem": "8.1.2",
+    "@capacitor/haptics": "8.0.2",
+    "@capacitor/ios": "8.4.1",
+    "@capacitor/keyboard": "8.0.5",
+    "@capacitor/status-bar": "8.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.4.1",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "license": "GPL-3.0-only"
+}

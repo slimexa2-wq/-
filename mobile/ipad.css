@@ -1,0 +1,48 @@
+:root {
+  --mineradio-safe-top: env(safe-area-inset-top, 0px);
+  --mineradio-safe-right: env(safe-area-inset-right, 0px);
+  --mineradio-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --mineradio-safe-left: env(safe-area-inset-left, 0px);
+}
+
+html.mineradio-ipad-shell,
+html.mineradio-ipad-shell body {
+  width: 100%;
+  min-height: 100%;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+html.mineradio-ipad-shell body {
+  padding-top: var(--mineradio-safe-top);
+  padding-right: var(--mineradio-safe-right);
+  padding-bottom: var(--mineradio-safe-bottom);
+  padding-left: var(--mineradio-safe-left);
+}
+
+html.mineradio-ipad-shell input,
+html.mineradio-ipad-shell textarea,
+html.mineradio-ipad-shell [contenteditable='true'] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+html.mineradio-ipad-shell button,
+html.mineradio-ipad-shell [role='button'],
+html.mineradio-ipad-shell a {
+  min-width: 44px;
+  min-height: 44px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html.mineradio-ipad-shell .desktop-only,
+html.mineradio-ipad-shell [data-desktop-only='true'],
+html.mineradio-ipad-shell .window-controls,
+html.mineradio-ipad-shell #desktopWindowControls,
+html.mineradio-ipad-shell .desktop-lyrics-button,
+html.mineradio-ipad-shell .wallpaper-mode-button {
+  display: none !important;
+}
