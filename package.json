@@ -2,5 +2,15 @@
   "name": "mineradio-ipad-port",
   "version": "0.1.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "upstream:sync": "node scripts/sync-upstream.mjs",
+    "mobile:patch": "node scripts/patch-mobile.mjs",
+    "mobile:prepare": "npm run upstream:sync && npm run mobile:patch",
+    "cap:add:ios": "npx cap add ios",
+    "cap:sync": "npx cap sync ios",
+    "ios:open": "npx cap open ios",
+    "build:ipad": "npm run mobile:prepare && npm run cap:sync",
+    "check": "node scripts/check-project.mjs"
+  }
 }
