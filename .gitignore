@@ -1,0 +1,10 @@
+node_modules/
+.upstream/
+.tmp/
+ios/App/Pods/
+ios/App/App/public/
+ios/App/DerivedData/
+www/*
+!www/.gitkeep
+.DS_Store
+*.log
